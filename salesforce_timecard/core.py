@@ -60,7 +60,16 @@ class TimecardEntry:
                 )
             except SalesforceAuthenticationFailed as e:
                 logger.error(e)
-                sys.exit(1)
+                            
+                try:
+                    self.sf = Salesforce(
+                        username=self.cfg.username,
+                        seesion_id=self.cfg.access_token,
+                        domain=self.cfg.domain,
+                    )
+                except SalesforceAuthenticationFailed as e:
+                    logger.error(e)
+                    sys.exit(1)
 
             self.contact_id = self.get_contact_id(self.cfg.username)
             self.assignments = self.get_assignments_active()
