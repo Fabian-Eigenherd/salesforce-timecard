@@ -12,9 +12,9 @@ class HoursCounter(object):
       if "_Hours__c" in _k:
          if k not in self.data.keys():
             self.data[k] = 0
-         self.data[k] += int(v)
-         self.sum += int(v)
-         self.card_sum += int(v)
+         self.data[k] += float(v)
+         self.sum += float(v)
+         self.card_sum += float(v)
       self.card[k] = v
 
    def summary(self):
