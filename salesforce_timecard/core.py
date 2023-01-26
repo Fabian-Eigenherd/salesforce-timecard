@@ -69,7 +69,7 @@ class TimecardEntry:
                 try:
                     self.sf = Salesforce(
                         username=self.cfg.username,
-                        seesion_id=self.cfg.access_token,
+                        session_id=self.cfg.access_token,
                         domain=self.cfg.domain,
                     )
                 except SalesforceAuthenticationFailed as e:
