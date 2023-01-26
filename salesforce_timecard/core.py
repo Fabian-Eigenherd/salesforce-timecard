@@ -19,6 +19,7 @@ class AppConfig(BaseModel):
     username: str
     password: Optional[str]
     token: Optional[str]
+    access_token: Optional[str]
     domain: Optional[str] = None
     credential_store: constr(regex=r"^keyring$|^default$") = "default"
 
@@ -32,6 +33,10 @@ class AppConfig(BaseModel):
 
             values["token"] = keyring.get_password(
                 "salesforce_cli", f"{values['username']}_token"
+            )
+
+            values["access_token"] = keyring.get_password(
+                "salesforce_cli", f"{values['username']}_access_token"
             )
         return v
 
