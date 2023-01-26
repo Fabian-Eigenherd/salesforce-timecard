@@ -67,6 +67,10 @@ class TimecardEntry:
                 )
 
             except SalesforceAuthenticationFailed as e:
+                print(e)
+                if e['message'] == 'Session expired or invalid':
+                    logger.error('Refresh Access Token')
+
                 logger.error(e)
 
                 try:
