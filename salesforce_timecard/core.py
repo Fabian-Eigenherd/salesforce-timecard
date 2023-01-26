@@ -20,6 +20,7 @@ class AppConfig(BaseModel):
     password: Optional[str]
     token: Optional[str]
     access_token: Optional[str]
+    instance: Optional[str]
     domain: Optional[str] = None
     credential_store: constr(regex=r"^keyring$|^default$") = "default"
 
@@ -37,6 +38,10 @@ class AppConfig(BaseModel):
 
             values["access_token"] = keyring.get_password(
                 "salesforce_cli", f"{values['username']}_access_token"
+            )
+
+            values["instance"] = keyring.get_password(
+                "salesforce_cli", f"{values['username']}_instance"
             )
         return v
 
@@ -68,10 +73,9 @@ class TimecardEntry:
                             
                 try:
                     self.sf = Salesforce(
-                        username=self.cfg.username,
+                        instance=self.cfg.instance,
                         session_id=self.cfg.access_token,
-                        domain=self.cfg.domain,
-                    )
+                     )
                 except SalesforceAuthenticationFailed as e:
                     logger.error(e)
                     sys.exit(1)
