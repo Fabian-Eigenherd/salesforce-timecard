@@ -61,21 +61,23 @@ class TimecardEntry:
                     sys.exit(f"Unable to decode JSON config at {self.cfg_file}")
 
             try:
-                self.sf = Salesforce(
-                    username=self.cfg.username,
-                    password=self.cfg.password,
-                    security_token=self.cfg.token,
-                    domain=self.cfg.domain,
-                    client_id="FF",
-                )
-            except SalesforceAuthenticationFailed as e:
-                logger.error(e)
-                            
-                try:
                     self.sf = Salesforce(
                         instance=self.cfg.instance,
                         session_id=self.cfg.access_token,
-                     )
+                )
+
+            except SalesforceAuthenticationFailed as e:
+                logger.error(e)
+
+                try:
+                    self.sf = Salesforce(
+                        username=self.cfg.username,
+                        password=self.cfg.password,
+                        security_token=self.cfg.token,
+                        domain=self.cfg.domain,
+                        client_id="FF",
+                    )
+                            
                 except SalesforceAuthenticationFailed as e:
                     logger.error(e)
                     sys.exit(1)
