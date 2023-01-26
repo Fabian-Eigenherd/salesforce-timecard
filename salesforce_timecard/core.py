@@ -218,7 +218,7 @@ class TimecardEntry:
             "select Id, Name, pse__Project__c, pse__Project__r.Name, "
             "pse__Project__r.pse__Is_Billable__c from pse__Assignment__c "
             f"where pse__Resource__c = '{contact_id}' and "
-            "Open_up_Assignment_for_Time_entry__c = false and "
+            # "Open_up_Assignment_for_Time_entry__c = false and "   ### Not Currently Needed
             "pse__Closed_for_Time_Entry__c = false"
         )
 
@@ -232,7 +232,7 @@ class TimecardEntry:
             "select Id, Name, pse__Project__c, pse__Project__r.Name, "
             "pse__Project__r.pse__Is_Billable__c from pse__Assignment__c "
             f"where pse__Resource__c = '{contact_id}' and "
-            "Open_up_Assignment_for_Time_entry__c = false and "
+            # "Open_up_Assignment_for_Time_entry__c = false and "  ### Not Currently Needed
             "pse__Closed_for_Time_Entry__c = false and "
             "pse__Exclude_from_Planners__c = false and "
             f"pse__End_Date__c > {date.today().strftime('%Y-%m-%d')}"

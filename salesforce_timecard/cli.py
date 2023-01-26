@@ -333,7 +333,7 @@ def setup_cli():
     click.echo()
     access_token = click.prompt("Insert your Saleforce Access_Token", prompt_suffix=': ', hide_input=True, show_default=False, type=str)
     click.echo()
-    instance = click.prompt("Insert your Saleforce Instance", prompt_suffix=': ', hide_input=True, show_default=False, type=str)
+    instance = click.prompt("Insert your Saleforce Instance", prompt_suffix=': ', hide_input=False, show_default=False, type=str)
     click.echo()
 
     keyring.set_password("salesforce_cli", f"{username}_password", password)
