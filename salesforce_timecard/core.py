@@ -101,7 +101,7 @@ class TimecardEntry:
     def get_week(self, day):
         dt = datetime.strptime(day, "%d-%m-%Y")
         # FIXME does this need to be self?
-        self.start = dt - timedelta(days=dt.weekday())
+        self.start = dt - timedelta(days=dt.weekday()+1)
         self.end = self.start + timedelta(days=6)
 
     def safe_sql(self, sql):

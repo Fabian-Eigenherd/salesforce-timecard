@@ -71,8 +71,8 @@ def process_row(ctx, project, notes, hours, weekday, w, file):
         assignment_id = nice_assign[int(select_assign)]
 
     if w != "":
-        days = ["Monday", "Tuesday", "Wednesday",
-                "Thursday", "Friday", "Saturday", "Sunday"]
+        days = ["Sunday", "Monday", "Tuesday", "Wednesday",
+                "Thursday", "Friday", "Saturday"]
         day_n_in = days[int(w) - 1]
     else:
         day_n_in = weekday
@@ -285,8 +285,8 @@ def list(ctx, details, style):
     "-t", "--hours", default=0, help="hour/s to add")
 @click.option(
     "--weekday",
-    type=click.Choice(["Monday", "Tuesday", "Wednesday",
-                       "Thursday", "Friday", "Saturday", "Sunday"]),
+    type=click.Choice([ "Sunday", "Monday", "Tuesday", "Wednesday",
+                       "Thursday", "Friday", "Saturday"]),
     default=date.today().strftime("%A"),
     help="Weekday to add")
 @click.option(
