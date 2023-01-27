@@ -15,6 +15,7 @@ from datetime import datetime, timedelta, date
 from salesforce_timecard.core import TimecardEntry
 from salesforce_timecard.utils import HoursCounter
 from salesforce_timecard import __version__, __description__
+from simple_salesforce.exceptions import SalesforceExpiredSession, SalesforceError, SalesforceAuthenticationFailed
 
 logger = logging.getLogger("salesforce_timecard")
 handler = logging.StreamHandler(sys.stdout)
@@ -24,7 +25,6 @@ logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
 te = TimecardEntry()
-
 
 
 def process_row(ctx, project, notes, hours, weekday, w, file):
@@ -116,8 +116,9 @@ def catch_exceptions(func):
 @click.option(
     "--week", default="", help="relative week interval e.g.: -1")
 @click.pass_context
-def cli(ctx, verbose, startday, endday, week):  # pragma: no cover
 
+
+def cli(ctx, verbose, startday, endday, week):  # pragma: no cover
     regex = r"^([2][0]\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))$"
     if not re.match(regex, startday):
         click.echo("INVALID start date - please use YYYY-MM-DD format")
@@ -143,6 +144,50 @@ def cli(ctx, verbose, startday, endday, week):  # pragma: no cover
         "startday": startday,
         "endday": endday
     }
+
+
+@cli.command(name="setup", aliases=["setup"])
+def setup_cli(refresh=False):
+    """setup_cli"""
+
+    if refresh == True:
+        username = click.prompt('Please enter your salesforce username', type=str)
+        access_token = click.prompt("Insert your Saleforce Access_Token", prompt_suffix=': ', hide_input=True, show_default=False, type=str)
+        click.echo()
+        keyring.set_password("salesforce_cli", f"{username}_access_token", access_token)
+
+    else:
+        username = click.prompt('Please enter your salesforce username', type=str)
+
+        cfg = {
+                "username": username,
+                "credential_store": "keyring"
+            }
+        click.echo(
+            json.dumps(cfg, indent=4)
+        )
+        cfg_file = os.path.expanduser("~/.pse.json")
+        click.confirm(f"can I create this config on {cfg_file} ?", default=True, abort=True)
+        click.echo()
+
+        with open(cfg_file, "w") as outfile:
+            json.dump(cfg,outfile, indent=4)
+
+        password = click.prompt("Insert your Saleforce Password", prompt_suffix=': ',hide_input=True, show_default=False, type=str)
+        click.echo()
+        token = click.prompt("Insert your Saleforce Token", prompt_suffix=': ', hide_input=True, show_default=False, type=str)
+        click.echo()
+        access_token = click.prompt("Insert your Saleforce Access_Token", prompt_suffix=': ', hide_input=True, show_default=False, type=str)
+        click.echo()
+        instance = click.prompt("Insert your Saleforce Instance", prompt_suffix=': ', hide_input=False, show_default=False, type=str)
+        click.echo()
+
+        keyring.set_password("salesforce_cli", f"{username}_password", password)
+        keyring.set_password("salesforce_cli", f"{username}_token", token)
+        keyring.set_password("salesforce_cli", f"{username}_access_token", access_token)
+        keyring.set_password("salesforce_cli", f"{username}_instance", instance)
+
+        click.echo("Setup Completed")
 
 
 @cli.command(name="delete", aliases=["d", "del", "rm", "remove"])
@@ -219,7 +264,10 @@ def submit(ctx, force):
 @click.pass_context
 @catch_exceptions
 def list(ctx, details, style):
-    rs = te.list_timecard(details, ctx.obj["startday"], ctx.obj["endday"])
+    try:
+        rs = te.list_timecard(details, ctx.obj["startday"], ctx.obj["endday"])
+    except SalesforceExpiredSession as e:
+        setup_cli(refresh=True)
     if style == "json":
         click.echo(json.dumps(rs, indent=4))
     else:
@@ -306,46 +354,3 @@ def sample_timecard():
         }, indent = 4)
     )
 
-
-@cli.command(name="setup", aliases=["setup"])
-def setup_cli(refresh=False):
-    """setup_cli"""
-
-    if refresh == True:
-        username = click.prompt('Please enter your salesforce username', type=str)
-        access_token = click.prompt("Insert your Saleforce Access_Token", prompt_suffix=': ', hide_input=True, show_default=False, type=str)
-        click.echo()
-        keyring.set_password("salesforce_cli", f"{username}_access_token", access_token)
-
-    else:
-        username = click.prompt('Please enter your salesforce username', type=str)
-
-        cfg = {
-                "username": username,
-                "credential_store": "keyring"
-            }
-        click.echo(
-            json.dumps(cfg, indent=4)
-        )
-        cfg_file = os.path.expanduser("~/.pse.json")
-        click.confirm(f"can I create this config on {cfg_file} ?", default=True, abort=True)
-        click.echo()
-
-        with open(cfg_file, "w") as outfile:
-            json.dump(cfg,outfile, indent=4)
-
-        password = click.prompt("Insert your Saleforce Password", prompt_suffix=': ',hide_input=True, show_default=False, type=str)
-        click.echo()
-        token = click.prompt("Insert your Saleforce Token", prompt_suffix=': ', hide_input=True, show_default=False, type=str)
-        click.echo()
-        access_token = click.prompt("Insert your Saleforce Access_Token", prompt_suffix=': ', hide_input=True, show_default=False, type=str)
-        click.echo()
-        instance = click.prompt("Insert your Saleforce Instance", prompt_suffix=': ', hide_input=False, show_default=False, type=str)
-        click.echo()
-
-        keyring.set_password("salesforce_cli", f"{username}_password", password)
-        keyring.set_password("salesforce_cli", f"{username}_token", token)
-        keyring.set_password("salesforce_cli", f"{username}_access_token", access_token)
-        keyring.set_password("salesforce_cli", f"{username}_instance", instance)
-
-        click.echo("Setup Completed")
