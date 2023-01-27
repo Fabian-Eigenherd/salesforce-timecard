@@ -308,37 +308,44 @@ def sample_timecard():
 
 
 @cli.command(name="setup", aliases=["setup"])
-def setup_cli():
+def setup_cli(refresh):
     """setup_cli"""
 
-    username = click.prompt('Please enter your salesforce username', type=str)
+    if refresh == True:
+        username = click.prompt('Please enter your salesforce username', type=str)
+        access_token = click.prompt("Insert your Saleforce Access_Token", prompt_suffix=': ', hide_input=True, show_default=False, type=str)
+        click.echo()
+        keyring.set_password("salesforce_cli", f"{username}_access_token", access_token)
 
-    cfg = {
-            "username": username,
-            "credential_store": "keyring"
-        }
-    click.echo(
-        json.dumps(cfg, indent=4)
-    )
-    cfg_file = os.path.expanduser("~/.pse.json")
-    click.confirm(f"can I create this config on {cfg_file} ?", default=True, abort=True)
-    click.echo()
+    else:
+        username = click.prompt('Please enter your salesforce username', type=str)
 
-    with open(cfg_file, "w") as outfile:
-        json.dump(cfg,outfile, indent=4)
+        cfg = {
+                "username": username,
+                "credential_store": "keyring"
+            }
+        click.echo(
+            json.dumps(cfg, indent=4)
+        )
+        cfg_file = os.path.expanduser("~/.pse.json")
+        click.confirm(f"can I create this config on {cfg_file} ?", default=True, abort=True)
+        click.echo()
 
-    password = click.prompt("Insert your Saleforce Password", prompt_suffix=': ',hide_input=True, show_default=False, type=str)
-    click.echo()
-    token = click.prompt("Insert your Saleforce Token", prompt_suffix=': ', hide_input=True, show_default=False, type=str)
-    click.echo()
-    access_token = click.prompt("Insert your Saleforce Access_Token", prompt_suffix=': ', hide_input=True, show_default=False, type=str)
-    click.echo()
-    instance = click.prompt("Insert your Saleforce Instance", prompt_suffix=': ', hide_input=False, show_default=False, type=str)
-    click.echo()
+        with open(cfg_file, "w") as outfile:
+            json.dump(cfg,outfile, indent=4)
 
-    keyring.set_password("salesforce_cli", f"{username}_password", password)
-    keyring.set_password("salesforce_cli", f"{username}_token", token)
-    keyring.set_password("salesforce_cli", f"{username}_access_token", access_token)
-    keyring.set_password("salesforce_cli", f"{username}_instance", instance)
+        password = click.prompt("Insert your Saleforce Password", prompt_suffix=': ',hide_input=True, show_default=False, type=str)
+        click.echo()
+        token = click.prompt("Insert your Saleforce Token", prompt_suffix=': ', hide_input=True, show_default=False, type=str)
+        click.echo()
+        access_token = click.prompt("Insert your Saleforce Access_Token", prompt_suffix=': ', hide_input=True, show_default=False, type=str)
+        click.echo()
+        instance = click.prompt("Insert your Saleforce Instance", prompt_suffix=': ', hide_input=False, show_default=False, type=str)
+        click.echo()
 
-    click.echo("Setup Completed")
+        keyring.set_password("salesforce_cli", f"{username}_password", password)
+        keyring.set_password("salesforce_cli", f"{username}_token", token)
+        keyring.set_password("salesforce_cli", f"{username}_access_token", access_token)
+        keyring.set_password("salesforce_cli", f"{username}_instance", instance)
+
+        click.echo("Setup Completed")

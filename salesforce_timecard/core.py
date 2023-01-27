@@ -10,7 +10,7 @@ from typing import Optional
 import keyring
 from pydantic import BaseModel, validator, constr
 from simple_salesforce import Salesforce
-from simple_salesforce.exceptions import SalesforceError, SalesforceAuthenticationFailed
+from simple_salesforce.exceptions import SalesforceExpiredSession, SalesforceError, SalesforceAuthenticationFailed
 
 logger = logging.getLogger("salesforce_timecard")
 
@@ -45,10 +45,14 @@ class AppConfig(BaseModel):
             )
         return v
 
+    def refresh_access_token():
+        import cli
+        cli.setup_cli(refresh=True)
+
+
 
 class TimecardEntry:
     def __init__(self, cfg="~/.pse.json"):
-
 
         self.get_week(date.today().strftime("%d-%m-%Y"))
         self.cfg_file = os.path.expanduser(cfg)
@@ -66,13 +70,13 @@ class TimecardEntry:
                         session_id=self.cfg.access_token,
                 )
 
-            except SalesforceAuthenticationFailed as e:
-                logger.error(e)
-                logger.error(e)
-                logger.error(e)
-                if e['message'] == 'Session expired or invalid':
-                    logger.error('Refresh Access Token')
+            except SalesforceExpiredSession as e:
+                logger.error('Refresh Access Token')
+                AppConfig.refresh_access_token()
+                logger.warning('New Access Token saved. Rerun Command')
+                sys.exit(1)
 
+            except SalesforceAuthenticationFailed as e:
                 logger.error(e)
 
                 try:
