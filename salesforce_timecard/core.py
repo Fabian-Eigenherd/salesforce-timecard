@@ -109,6 +109,11 @@ class TimecardEntry:
         logger.debug(sql)
         try:
             return self.sf.query_all(sql)
+        except SalesforceExpiredSession as e:
+            logger.error('Refresh Access Token')
+            AppConfig.refresh_access_token()
+            logger.warning('New Access Token saved. Rerun Command')
+            sys.exit(1)
         except SalesforceError:
             logger.error("error on query:{}".format(sql))
             logger.error(sys.exc_info()[1])
@@ -288,6 +293,11 @@ class TimecardEntry:
     def delete_time_entry(self, _id):
         try:
             return self.sf.pse__Timecard_Header__c.delete(_id)
+        except SalesforceExpiredSession as e:
+            logger.error('Refresh Access Token')
+            AppConfig.refresh_access_token()
+            logger.warning('New Access Token saved. Rerun Command')
+            sys.exit(1)
         except SalesforceError:
             logger.error("failed on deletion id:{}".format(_id))
             logger.error(sys.exc_info()[1])
@@ -349,6 +359,11 @@ class TimecardEntry:
                 return self.sf.pse__Timecard_Header__c.update(
                     results["records"][0]["Id"], new_timecard
                 )
+            except SalesforceExpiredSession as e:
+                logger.error('Refresh Access Token')
+                AppConfig.refresh_access_token()
+                logger.warning('New Access Token saved. Rerun Command')
+                sys.exit(1)
             except SalesforceError:
                 logger.error("failed on update")
                 logger.error(sys.exc_info()[1])
@@ -357,6 +372,11 @@ class TimecardEntry:
         else:
             try:
                 return self.sf.pse__Timecard_Header__c.create(new_timecard)
+            except SalesforceExpiredSession as e:
+                logger.error('Refresh Access Token')
+                AppConfig.refresh_access_token()
+                logger.warning('New Access Token saved. Rerun Command')
+                sys.exit(1)
             except SalesforceError:
                 logger.error("failed on creation")
                 logger.error(sys.exc_info()[1])
@@ -369,6 +389,11 @@ class TimecardEntry:
         }
         try:
             self.sf.pse__Timecard_Header__c.update(_id, data)
+        except SalesforceExpiredSession as e:
+            logger.error('Refresh Access Token')
+            AppConfig.refresh_access_token()
+            logger.warning('New Access Token saved. Rerun Command')
+            sys.exit(1)
         except SalesforceError:
             logger.error("failed on update")
             logger.error(sys.exc_info()[1])

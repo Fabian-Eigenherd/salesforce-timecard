@@ -308,7 +308,7 @@ def sample_timecard():
 
 
 @cli.command(name="setup", aliases=["setup"])
-def setup_cli(refresh):
+def setup_cli(refresh=False):
     """setup_cli"""
 
     if refresh == True:
