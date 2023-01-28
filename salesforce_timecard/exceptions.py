@@ -6,7 +6,6 @@ import json
 from simple_salesforce.exceptions import SalesforceExpiredSession, SalesforceError, SalesforceAuthenticationFailed
 
 
-
 def manual_refresh():
     username = click.prompt('Please enter your salesforce username', type=str)
     access_token = click.prompt("Insert your Saleforce Access_Token", prompt_suffix=': ', hide_input=True, show_default=False, type=str)
@@ -22,5 +21,4 @@ def sfdx_token_refresh():
     username = sfdx_results['result']['username']
     access_token = sfdx_results['result']['accessToken']
     keyring.set_password("salesforce_cli", f"{username}_access_token", access_token)
-
 
