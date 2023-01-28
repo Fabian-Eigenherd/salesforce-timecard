@@ -15,7 +15,7 @@ from datetime import datetime, timedelta, date
 from salesforce_timecard.core import TimecardEntry
 from salesforce_timecard.utils import HoursCounter
 from salesforce_timecard import __version__, __description__
-from simple_salesforce.exceptions import SalesforceExpiredSession, SalesforceError, SalesforceAuthenticationFailed
+from simple_salesforce.exceptions import SalesforceExpiredSession
 
 logger = logging.getLogger("salesforce_timecard")
 handler = logging.StreamHandler(sys.stdout)
