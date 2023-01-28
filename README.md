@@ -5,10 +5,18 @@
 [![Actions Status: publish](https://github.com/giuliocalzolari/salesforce-timecard/actions/workflows/publish.yml/badge.svg)](https://github.com/giuliocalzolari/salesforce-timecard/actions?query=workflow%3A"Publish%20PyPi")
 
 
-This Python package provides a CLI tool which can submit timecard entries to
-SalesForce programmatically.
+This Python package provides a CLI tool which can submit timecard entries to SalesForce programmatically.
+
+SFDX can be used to manage api access tokens
 
 ## Installation
+
+To install from the repo:
+
+```bash
+python3.9 setup install 
+```
+
 
 To install the tool from PyPI, just use `pip`:
 
