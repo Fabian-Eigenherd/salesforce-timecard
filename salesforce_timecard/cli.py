@@ -278,11 +278,13 @@ def list(ctx, details, style):
 
 @cli.command(name="add", aliases=["a", "ad"])
 @click.option(
+    "-a", "--append", default="", help="Append to Project")
+@click.option(
     "-p", "--project", default="", help="Project Name")
 @click.option(
     "-n", "--notes", default="Business as usual", help="Notes to add")
 @click.option(
-    "-t", "--hours", default=0, help="hour/s to add")
+    "-t", "--hours", default=0, type=float, help="hour/s to add")
 @click.option(
     "--weekday",
     type=click.Choice([ "Sunday", "Monday", "Tuesday", "Wednesday",

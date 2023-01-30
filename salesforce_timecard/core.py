@@ -131,7 +131,7 @@ class TimecardEntry:
         if details:
             base = [
                 "OwnerId",
-                "PROJECT_ID__c",
+                # "PROJECT_ID__c", ### Error
                 "pse__Approved__c",
                 "pse__Start_Date__c",
                 "pse__End_Date__c",
