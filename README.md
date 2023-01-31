@@ -20,7 +20,7 @@ brew install sfdx
 To install from the repo:
 
 ```bash
-python3.9 setup install 
+python3 setup install 
 ```
 
 ToDo: Update pip install commands below to point to the forked repo.
