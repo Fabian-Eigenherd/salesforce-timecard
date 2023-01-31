@@ -15,7 +15,7 @@ Download the relative tool from https://developer.salesforce.com/tools/sfdxcli
 or
 brew install sfdx
 
-### Salesforc-timecard
+### Salesforce-timecard
 
 To install from the repo directory:
 
