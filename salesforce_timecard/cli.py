@@ -27,7 +27,7 @@ logger.setLevel(logging.INFO)
 te = TimecardEntry()
 
 
-def process_row(ctx, project, notes, hours, weekday, w, file):
+def process_row(ctx, project, notes, hours, weekday, w, file, modify=False):
     assignment_id = None
     active_assignment = te.get_assignments_active()
     for _, assign in active_assignment.items():
@@ -83,7 +83,10 @@ def process_row(ctx, project, notes, hours, weekday, w, file):
     else:
         hours_in = hours
 
-    te.add_time_entry(assignment_id, day_n_in, hours_in, notes)
+    if modify == False:
+        te.add_time_entry(assignment_id, day_n_in, hours_in, notes)
+    elif modify == True:
+        te.modify_time_entry(assignment_id, day_n_in, hours_in, notes)
     logger.info("Time card added")
 
 
@@ -278,8 +281,6 @@ def list(ctx, details, style):
 
 @cli.command(name="add", aliases=["a", "ad"])
 @click.option(
-    "-a", "--append", default="", help="Append to Project")
-@click.option(
     "-p", "--project", default="", help="Project Name")
 @click.option(
     "-n", "--notes", default="Business as usual", help="Notes to add")
@@ -313,9 +314,49 @@ def add(ctx, project, notes, hours, weekday, w, file):
             click.echo(f"Adding entries for {day}...")
             for task, meta in work.items():
                 notes = meta['notes'] if 'notes' in meta else ''
-                process_row(ctx, task, notes, meta['hours'], day, '', '')
+                process_row(ctx, task, notes, meta['hours'], day, '', '', modify=False)
     else:
-        process_row(ctx, project, notes, hours, weekday, w, file)
+        process_row(ctx, project, notes, hours, weekday, w, file, modify=False)
+
+
+@cli.command(name="modify", aliases=["m", "mod"])
+@click.option(
+    "-p", "--project", default="", help="Project Name")
+@click.option(
+    "-n", "--notes", default="Business as usual", help="Notes to add")
+@click.option(
+    "-t", "--hours", default=0, type=float, help="hour/s to add")
+@click.option(
+    "--weekday",
+    type=click.Choice([ "Sunday", "Monday", "Tuesday", "Wednesday",
+                       "Thursday", "Friday", "Saturday"]),
+    default=date.today().strftime("%A"),
+    help="Weekday to add")
+@click.option(
+    "-w",
+    type=click.Choice(["", "1", "2", "3", "4", "5", "6", "7"]),
+    default="",
+    help="INT Weekday to add")
+@click.option(
+    "-f", "--file", default="", help="YAML file containing timesheet data")
+@click.pass_context
+@catch_exceptions
+def modify(ctx, project, notes, hours, weekday, w, file):
+    """Add time entry to the timecard."""
+    # hack to let the option call the verb recursively
+    if file != "":
+        click.echo(f"Parsing timesheet file {file}...")
+        with open(file, "r") as stream:
+            bulk_data = yaml.safe_load(stream)
+
+        click.echo(bulk_data)
+        for day, work in bulk_data.items():
+            click.echo(f"Adding entries for {day}...")
+            for task, meta in work.items():
+                notes = meta['notes'] if 'notes' in meta else ''
+                process_row(ctx, task, notes, meta['hours'], day, '', '', modify=True)
+    else:
+        process_row(ctx, project, notes, hours, weekday, w, file, modify=True)
 
 
 @cli.command(name="sample-timecard", aliases=["sample"])

@@ -365,6 +365,80 @@ class TimecardEntry:
                 logger.error(sys.exc_info()[1])
                 sys.exit(1)
 
+    def modify_time_entry(self, assignment_id, day_n, hours, notes):
+        # FIXME assignment_id is used only here?
+        self.assignment_id = assignment_id
+        modify_timecard = {
+            "pse__Start_Date__c": self.start.strftime("%Y-%m-%d"),
+            "pse__End_Date__c": self.end.strftime("%Y-%m-%d"),
+            "pse__Resource__c": self.contact_id,
+            "pse__Status__c": "Saved",
+        }
+
+        if self.assignment_id in self.assignments.keys():
+            modify_timecard["pse__Assignment__c"] = self.assignment_id
+            modify_timecard["pse__Project__c"] = self.assignments[self.assignment_id][
+                "project_id"
+            ]
+            modify_timecard["pse__Billable__c"] = self.assignments[self.assignment_id][
+                "billable"
+            ]
+            sql_query = (
+                "select Id from pse__Timecard_Header__c "
+                "where "
+                f"pse__Start_Date__c = {self.start.strftime('%Y-%m-%d')} "
+                f"and pse__End_Date__c = {self.end.strftime('%Y-%m-%d')} and "
+                f"pse__Resource__c = '{self.contact_id}' and "
+                f"pse__Assignment__c = '{self.assignment_id}'  and "
+                f"pse__Project__c = '{self.assignments[self.assignment_id]['project_id']}' and "
+                "pse__Status__c not in ('Submitted', 'Approved')"
+            )
+        else:
+            # most probably is a project without assigment
+            modify_timecard["pse__Project__c"] = self.assignment_id
+            modify_timecard["pse__Billable__c"] = self.global_project[self.assignment_id][
+                "billable"
+            ]
+
+            sql_query = (
+                "select Id from pse__Timecard_Header__c "
+                "where "
+                f"pse__Start_Date__c = {self.start.strftime('%Y-%m-%d')} "
+                f"and pse__End_Date__c = {self.end.strftime('%Y-%m-%d')} and "
+                f"pse__Resource__c = '{self.contact_id}' and "
+                f"pse__Project__c = '{self.assignment_id}' and "
+                "pse__Status__c not in ('Submitted', 'Approved') "
+            )
+
+        results = self.safe_sql(sql_query)
+        current_timecard = self.sf.pse__Timecard_Header__c.get(results["records"][0]["Id"])
+        separator = ";"
+
+        modify_timecard[f"pse__{day_n}_Hours__c"] = current_timecard[f"pse__{day_n}_Hours__c"] + hours
+        modify_timecard[f"pse__{day_n}_Notes__c"] = separator.join((current_timecard[f"pse__{day_n}_Hours__c"], notes))
+        
+        logger.debug(json.dumps(modify_timecard, indent=4))
+        if len(results["records"]) > 0:
+            logger.debug("required update")
+            try:
+                return self.sf.pse__Timecard_Header__c.update(
+                    results["records"][0]["Id"], modify_timecard
+                )
+
+            except SalesforceError:
+                logger.error("failed on update")
+                logger.error(sys.exc_info()[1])
+                sys.exit(1)
+
+        else:
+            try:
+                return self.sf.pse__Timecard_Header__c.create(modify_timecard)
+
+            except SalesforceError:
+                logger.error("failed on creation")
+                logger.error(sys.exc_info()[1])
+                sys.exit(1)
+
     def submit_time_entry(self, _id):
         data = {
             "pse__Submitted__c": True,
