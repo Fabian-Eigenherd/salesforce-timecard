@@ -411,11 +411,14 @@ class TimecardEntry:
             )
 
         results = self.safe_sql(sql_query)
-        current_timecard = self.sf.pse__Timecard_Header__c.get(results["records"][0]["Id"])
+        self.timecard_id = results["records"][0]["Id"]
+        current_timecard = self.sf.pse__Timecard_Header__c.get(self.timecard_id)
         separator = ";"
 
-        modify_timecard[f"pse__{day_n}_Hours__c"] = str(float(current_timecard[f"pse__{day_n}_Hours__c"]) + float(hours))
-        modify_timecard[f"pse__{day_n}_Notes__c"] = separator.join((current_timecard[f"pse__{day_n}_Hours__c"], notes))
+        modify_timecard[f"pse__{day_n}_Hours__c"] = current_timecard[f"pse__{day_n}_Hours__c"] + hours
+        modify_timecard[f"pse__{day_n}_Notes__c"] = separator.join(
+            (current_timecard[f"pse__{day_n}_Notes__c"], notes)
+            )
         
         logger.debug(json.dumps(modify_timecard, indent=4))
         if len(results["records"]) > 0:
@@ -432,7 +435,7 @@ class TimecardEntry:
 
         else:
             try:
-                return self.sf.pse__Timecard_Header__c.create(modify_timecard)
+                return self.sf.pse__Timecard_Header__c.update(self.timecard_id, modify_timecard)
 
             except SalesforceError:
                 logger.error("failed on creation")
