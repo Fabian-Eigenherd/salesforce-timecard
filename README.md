@@ -17,10 +17,10 @@ brew install sfdx
 
 ### Salesforc-timecard
 
-To install from the repo:
+To install from the repo directory:
 
 ```bash
-python3 setup install 
+python3 setup.p install 
 ```
 
 ToDo: Update pip install commands below to point to the forked repo.
