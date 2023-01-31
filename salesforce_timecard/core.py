@@ -414,7 +414,7 @@ class TimecardEntry:
         current_timecard = self.sf.pse__Timecard_Header__c.get(results["records"][0]["Id"])
         separator = ";"
 
-        modify_timecard[f"pse__{day_n}_Hours__c"] = float(current_timecard[f"pse__{day_n}_Hours__c"]) + float(hours)
+        modify_timecard[f"pse__{day_n}_Hours__c"] = str(float(current_timecard[f"pse__{day_n}_Hours__c"]) + float(hours))
         modify_timecard[f"pse__{day_n}_Notes__c"] = separator.join((current_timecard[f"pse__{day_n}_Hours__c"], notes))
         
         logger.debug(json.dumps(modify_timecard, indent=4))
