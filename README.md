@@ -7,9 +7,15 @@
 
 This Python package provides a CLI tool which can submit timecard entries to SalesForce programmatically.
 
-SFDX can be used to manage api access tokens
+SFDX can be used to manage api access tokens.  Functionality has been added to check the status of the Access_Token Provided and request a new token through SFDX auth:web:login commands.
 
 ## Installation
+### SFDX
+Download the relative tool from https://developer.salesforce.com/tools/sfdxcli
+or
+brew install sfdx
+
+### Salesforc-timecard
 
 To install from the repo:
 
@@ -17,6 +23,7 @@ To install from the repo:
 python3.9 setup install 
 ```
 
+ToDo: Update pip install commands below to point to the forked repo.
 
 To install the tool from PyPI, just use `pip`:
 
@@ -48,6 +55,8 @@ can I create this config on /Users/your-username/.pse.json ? [Y/n]: y
 
 Insert your Saleforce Password: **********
 Insert your Saleforce Token:  **********
+Insert your Saleforce Instance:  {company}.my.salesforce.com
+Insert your Saleforce Acces_Token:  **********
 
 Setup Completed
 ```
@@ -62,7 +71,8 @@ included in it, located at `~/.pse.json`. It should look like:
 {
   "username": "your-salesforce-email@example.com",
   "password": "yoursupersecretpasswd",
-  "token": "afghfyfgbgnegrfbgdhtd"
+  "token": "afghfyfgbgnegrfbgdhtd",
+  "access_token": "afafghfyfgbgnegrfbgdhtdghafghfyfgbgnegrfbgdhtdfyfgbgneafghfyfgbgnegrfbgdhtdgrfbgdhtd"
 }
 ```
 
@@ -88,6 +98,9 @@ Under MacOS this can be added with the "Keychain Access" application, under the 
 
 
 ## Examples
+***NOTE***
+Using the `add` command overwrites any entry on the saved timecard and should not be used for Incrimental Additions to the time card.  Using the new `modify` command a user can add hour/time to the Hours fields and append Notes to the Day's Notes fields.
+
 
 Adding 3 hours of personal development on Wednesday:
 
@@ -105,6 +118,14 @@ Adding 8 hours for project PX1234 on Friday with some notes:
 ```
 $ timecard add -t 7 -p px1234 --weekday Friday --notes "I've done everything!"
 ```
+
+Adding 1 hour to an existing saved timecard entry with additional Notes:
+
+```
+timecard modify -t .5 -p px1234 --weekday Friday --notes "I forgot to submit my work!"
+```
+
+^^^ The 2 examples above would show `7.5` hours of work on Friday with the Notes "`I've done everything!;I forgot to submit my work!`" for the `px1234` project.^^^
 
 Deleting timecard directly:
 

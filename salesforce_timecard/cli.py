@@ -258,7 +258,7 @@ def submit(ctx, force):
 
 
 @cli.command(name="list", aliases=["ls", "lst", "l"])
-@click.option("--details/--no-details", default=False)
+@click.option("--details/--no-details", default=False, help="list all saved timecards")
 @click.option(
     "--style",
     type=click.Choice(["plain", "simple", "github", "grid", "fancy_grid", "pipe", "orgtbl", "jira", "presto", "json"]),
@@ -342,7 +342,7 @@ def add(ctx, project, notes, hours, weekday, w, file):
 @click.pass_context
 @catch_exceptions
 def modify(ctx, project, notes, hours, weekday, w, file):
-    """Add time entry to the timecard."""
+    """Append time entry to the timecard."""
     # hack to let the option call the verb recursively
     if file != "":
         click.echo(f"Parsing timesheet file {file}...")
