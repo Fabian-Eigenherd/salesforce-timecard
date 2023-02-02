@@ -10,10 +10,23 @@ This Python package provides a CLI tool which can submit timecard entries to Sal
 SFDX can be used to manage api access tokens.  Functionality has been added to check the status of the Access_Token Provided and request a new token through SFDX auth:web:login commands.
 
 ## Installation
-### SFDX
-Download the relative tool from https://developer.salesforce.com/tools/sfdxcli
-or
-brew install sfdx
+### SFDX  Methods
+
+1. Install SFDX
+  - brew install sfdx
+  - https://developer.salesforce.com/tools/sfdxcli
+2. execute `sfdx auth:web:login`
+  - Follow Web authentication workflow
+3. execute `sfdx force:org:display --targetusername {username@company.com} --json`
+  - Collect `access_token`
+4. install `salesforce-timecard`
+  - from git repo directory; execute `python3 setup.py install`  
+4. execute `timecard setup` and answer questions. 
+  - Username :required: `{username@company.com}`
+  - pasword: not required: `Blank`
+  - token: not required: `Blank`
+  - Instance : required: `{Mycompany}.my.salesforce.com`
+  - access_token: required: from SFDX
 
 ### Salesforce-timecard
 
