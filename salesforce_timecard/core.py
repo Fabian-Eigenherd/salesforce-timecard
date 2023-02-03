@@ -70,7 +70,8 @@ class TimecardEntry:
             except SalesforceExpiredSession as e:
                 logger.error('Refresh Access Token')
                 from salesforce_timecard.exceptions import sfdx_token_refresh
-                sfdx_token_refresh()
+                username, access_token = sfdx_token_refresh(instance=self.cfg.instance)
+                keyring.set_password("salesforce_cli", f"{username}_access_token", access_token)
                 logger.warning('Access Token Refreshed, resubmit command.')
                 sys.exit(1)           
 
