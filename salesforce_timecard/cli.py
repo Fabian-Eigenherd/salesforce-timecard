@@ -195,7 +195,7 @@ def setup_cli(ctx, auth_method, refresh=False):
             click.echo()
 
             try:
-                username, access_token = sfdx_token_refresh(instance=instance)
+                username, access_token = sfdx_token_refresh(username=username, instance=instance)
                 keyring.set_password("salesforce_cli", f"{username}_access_token", access_token)
             except Exception as e:
                 logger.error(e)

@@ -12,20 +12,16 @@ def manual_refresh():
     click.echo()
     keyring.set_password("salesforce_cli", f"{username}_access_token", access_token)
     
-def sfdx_token_refresh(instance):
+def sfdx_token_refresh(username, instance):
     instanceURL = f"https://{instance}"
     sfdx_webauth_process = Popen([distutils.spawn.find_executable("sfdx"), 'auth:web:login', "-r", instanceURL], stdout=PIPE, stdin=PIPE, stderr=PIPE).communicate()
-    sfdx_process = Popen([distutils.spawn.find_executable("sfdx"), 'force:org:display', '--json', '--targetusername', 'dedwards@bishopfox.com' ], stdout=PIPE, stdin=PIPE, stderr=PIPE)
+
+    sfdx_process = Popen([distutils.spawn.find_executable("sfdx"), 'force:org:display', '--json', '--targetusername', username ], stdout=PIPE, stdin=PIPE, stderr=PIPE)
     cmd_output, cmd_error = sfdx_process.communicate() 
     sfdx_results = json.loads(cmd_output.decode("utf-8")) 
-    print(sfdx_results)
+    username = sfdx_results['result']['username']
+    access_token = sfdx_results['result']['accessToken']
     
-    try:
-        username = sfdx_results['result']['username']
-        access_token = sfdx_results['result']['accessToken']
-    except Exception as e:
-        print(e)
-        print(cmd_error)
     return(username, access_token)
 
 
