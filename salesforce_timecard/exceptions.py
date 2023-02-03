@@ -13,7 +13,8 @@ def manual_refresh():
     keyring.set_password("salesforce_cli", f"{username}_access_token", access_token)
     
 def sfdx_token_refresh(instance):
-    sfdx_webauth_process = Popen([distutils.spawn.find_executable("sfdx"), 'auth:web:login', "-r", instance], stdout=PIPE, stdin=PIPE, stderr=PIPE).communicate()
+    instanceURL = f"https://{instance}"
+    sfdx_webauth_process = Popen([distutils.spawn.find_executable("sfdx"), 'auth:web:login', "-r", instanceURL], stdout=PIPE, stdin=PIPE, stderr=PIPE).communicate()
     sfdx_process = Popen([distutils.spawn.find_executable("sfdx"), 'force:org:display', '--json', '--targetusername', 'dedwards@bishopfox.com' ], stdout=PIPE, stdin=PIPE, stderr=PIPE)
     cmd_output, cmd_error = sfdx_process.communicate() 
     sfdx_results = json.loads(cmd_output.decode("utf-8")) 
