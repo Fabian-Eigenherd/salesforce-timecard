@@ -18,6 +18,7 @@ def sfdx_token_refresh(instance):
     sfdx_process = Popen([distutils.spawn.find_executable("sfdx"), 'force:org:display', '--json', '--targetusername', 'dedwards@bishopfox.com' ], stdout=PIPE, stdin=PIPE, stderr=PIPE)
     cmd_output, cmd_error = sfdx_process.communicate() 
     sfdx_results = json.loads(cmd_output.decode("utf-8")) 
+    print(sfdx_results)
     
     try:
         username = sfdx_results['result']['username']
@@ -25,6 +26,6 @@ def sfdx_token_refresh(instance):
     except Exception as e:
         print(e)
         print(cmd_error)
-    return(username,access_token)
+    return(username, access_token)
 
 
