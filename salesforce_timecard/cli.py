@@ -191,7 +191,7 @@ def setup_cli(ctx, auth_method, refresh=False):
             with open(cfg_file, "w") as outfile:
                 json.dump(cfg,outfile, indent=4)
 
-            instance = click.prompt("Insert your Saleforce Instance (CompanyName.my.salesforce.com)",
+            instance = click.prompt("Insert your Salesforce Instance (CompanyName.my.salesforce.com)",
                 prompt_suffix=': ', default=(insatance_domain + ".my.salesforce.com")  ,hide_input=False, show_default=True, type=str)
             click.echo()
 
