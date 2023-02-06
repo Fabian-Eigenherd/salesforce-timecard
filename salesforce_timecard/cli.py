@@ -174,6 +174,7 @@ def setup_cli(ctx, auth_method, refresh=False):
         logger.warning(f"Using the {auth_method} authentication method for config")
         if auth_method:
             username = click.prompt('Please enter your salesforce username', type=str)
+            insatance_domain = username.split('@')[1].split('.')[0]
 
             cfg = {
                     "username": username,
@@ -184,14 +185,14 @@ def setup_cli(ctx, auth_method, refresh=False):
                 json.dumps(cfg, indent=4)
             )
             cfg_file = os.path.expanduser("~/.pse.json")
-            click.confirm(f"can I create this config on {cfg_file} ?", default=True, abort=True)
+            click.confirm(f"Can I create this config on {cfg_file} ?", default=True, abort=True)
             click.echo()
 
             with open(cfg_file, "w") as outfile:
                 json.dump(cfg,outfile, indent=4)
 
             instance = click.prompt("Insert your Saleforce Instance (CompanyName.my.salesforce.com)",
-                prompt_suffix=': ', hide_input=False, show_default=False, type=str)
+                prompt_suffix=': ', default=(insatance_domain + ".my.salesforce.com")  ,hide_input=False, show_default=True, type=str)
             click.echo()
 
             try:
