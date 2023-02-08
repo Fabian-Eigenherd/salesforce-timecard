@@ -6,7 +6,6 @@ import os
 import sys
 from datetime import datetime, timedelta, date
 from typing import Optional
-from . import cli
 
 import keyring
 from pydantic import BaseModel, validator, constr
@@ -18,6 +17,7 @@ logger = logging.getLogger("salesforce_timecard")
 
 class AppConfig(BaseModel):
     username: str
+    auth_method: Optional[str]
     password: Optional[str]
     token: Optional[str]
     access_token: Optional[str]
@@ -29,6 +29,9 @@ class AppConfig(BaseModel):
     def cred_store(cls, v, values):
         if v == "keyring":
             logger.debug("Reading username and password from a keyring.")
+            values["password"] = keyring.get_password(
+                "salesforce_cli", f"{values['username']}_auth_method"
+            )
             values["password"] = keyring.get_password(
                 "salesforce_cli", f"{values['username']}_password"
             )
@@ -60,37 +63,41 @@ class TimecardEntry:
                 except json.decoder.JSONDecodeError:
                     sys.exit(f"Unable to decode JSON config at {self.cfg_file}")
 
-            try:
-                self.sf = Salesforce(
-                    instance=self.cfg.instance,
-                    session_id=self.cfg.access_token,
-                )
-                self.sf.limits()
+            logger.info('Attempting to Connect to Salesforce API')
+            while True:
+                if self.cfg.auth_method == 'access_token':
+                    try:
+                        self.sf = Salesforce(
+                            instance=self.cfg.instance,
+                            session_id=self.cfg.access_token,
+                        )
+                        self.sf.quick_search(self.cfg.username)
 
-            except SalesforceExpiredSession as e:
-                logger.error('Refresh Access Token')
-                from salesforce_timecard.exceptions import sfdx_token_refresh
-                username, access_token = sfdx_token_refresh(username=self.cfg.username, instance=self.cfg.instance)
-                keyring.set_password("salesforce_cli", f"{username}_access_token", access_token)
-                logger.warning('Access Token Refreshed, resubmit command.')
-                sys.exit(1)           
+                    except SalesforceExpiredSession as e:
+                        logger.error('Refresh Access Token')
+                        from salesforce_timecard.sfdx_integration import sfdx_token_refresh
+                        username, access_token = sfdx_token_refresh(username=self.cfg.username, instance=self.cfg.instance)
+                        keyring.set_password("salesforce_cli", f"{username}_access_token", access_token)
+                        logger.warning('Access Token Refreshed, resubmit command.')
+                        continue       
+                    except SalesforceAuthenticationFailed as e:
+                        logger.error(e)
+                    break
 
-            except SalesforceAuthenticationFailed as e:
-                logger.error(e)
+                elif self.cfg.auth_method == 'sf_token':
+                    try:
+                        self.sf = Salesforce(
+                            username=self.cfg.username,
+                            password=self.cfg.password,
+                            security_token=self.cfg.token,
+                            domain=self.cfg.domain,
+                            client_id="FF",
+                        )
+                        self.sf.quick_search(self.cfg.username)
 
-                try:
-                    self.sf = Salesforce(
-                        username=self.cfg.username,
-                        password=self.cfg.password,
-                        security_token=self.cfg.token,
-                        domain=self.cfg.domain,
-                        client_id="FF",
-                    )
-                    self.sf.limits()
-
-                except SalesforceAuthenticationFailed as e:
-                    logger.error(e)
-                    sys.exit(1)
+                    except SalesforceAuthenticationFailed as e:
+                        logger.error(e)
+                    break
 
             self.contact_id = self.get_contact_id(self.cfg.username)
             self.assignments = self.get_assignments_active()
