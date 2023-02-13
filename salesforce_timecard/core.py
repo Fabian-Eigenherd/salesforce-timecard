@@ -74,11 +74,12 @@ class TimecardEntry:
                         self.sf.quick_search(self.cfg.username)
 
                     except SalesforceExpiredSession as e:
-                        logger.error('Refresh Access Token')
+                        logger.error(f'Refreshing Access Token {self.cfg.access_token} has expired')
                         from salesforce_timecard.sfdx_integration import sfdx_token_refresh
-                        username, access_token = sfdx_token_refresh(username=self.cfg.username, instance=self.cfg.instance)
+                        username, access_token = sfdx_token_refresh(username=self.cfg.username)
                         keyring.set_password("salesforce_cli", f"{username}_access_token", access_token)
-                        logger.warning('Access Token Refreshed, resubmit command.')
+                        self.cfg.access_token = access_token
+                        logger.warning('Access Token Refreshed, attempting to resubmit command...')
                         continue       
                     except SalesforceAuthenticationFailed as e:
                         logger.error(e)
@@ -419,21 +420,18 @@ class TimecardEntry:
             )
 
         results = self.safe_sql(sql_query)
-        self.timecard_id = results["records"][0]["Id"]
-        current_timecard = self.sf.pse__Timecard_Header__c.get(self.timecard_id)
-        separator = ";"
-
-        modify_timecard[f"pse__{day_n}_Hours__c"] = current_timecard[f"pse__{day_n}_Hours__c"] + hours
-        modify_timecard[f"pse__{day_n}_Notes__c"] = separator.join(
-            (current_timecard[f"pse__{day_n}_Notes__c"], notes)
-            )
-        
         logger.debug(json.dumps(modify_timecard, indent=4))
         if len(results["records"]) > 0:
             logger.debug("required update")
+            self.timecard_id = results["records"][0]["Id"]
+            current_timecard = self.sf.pse__Timecard_Header__c.get(self.timecard_id)
+            separator = ";"
+            modify_timecard[f"pse__{day_n}_Hours__c"] = current_timecard[f"pse__{day_n}_Hours__c"] + hours
+            modify_timecard[f"pse__{day_n}_Notes__c"] = separator.join(
+                (current_timecard[f"pse__{day_n}_Notes__c"], notes))
             try:
                 return self.sf.pse__Timecard_Header__c.update(
-                    results["records"][0]["Id"], modify_timecard
+                    self.timecard_id, modify_timecard
                 )
 
             except SalesforceError:
@@ -443,7 +441,9 @@ class TimecardEntry:
 
         else:
             try:
-                return self.sf.pse__Timecard_Header__c.update(self.timecard_id, modify_timecard)
+                modify_timecard[f"pse__{day_n}_Hours__c"] = hours
+                modify_timecard[f"pse__{day_n}_Notes__c"] = notes
+                return self.sf.pse__Timecard_Header__c.create(modify_timecard)
 
             except SalesforceError:
                 logger.error("failed on creation")
