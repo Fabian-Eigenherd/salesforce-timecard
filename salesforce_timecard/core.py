@@ -214,11 +214,10 @@ class TimecardEntry:
             return []
 
     def get_contact_id(self, email):
-        name_part = email.split("@")[0]
         r = self.safe_sql(
             (
                 "select Id, Name, Email from Contact "
-                f"where pse__Is_Resource__c = true and Email LIKE '{name_part}@%'"
+                f"where pse__Is_Resource__c = true and pse__Salesforce_User__r.Email = '{email}'"
             )
         )
         return r["records"][0]["Id"]
